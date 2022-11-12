@@ -11,15 +11,17 @@ class Game < Window
     params[:width]       ||= 640*2
     params[:height]      ||= 480*2
     params[:fullscreen]  ||= false
-    params[:caption]     ||= 'Procedual map'
+    params[:caption]     ||= 'Procedural map'
     params[:show_cursor] ||= true
     params[:escape_key]  ||= KB_ESCAPE
     params[:resizable]   ||= true
+    params[:scale]   ||= 1
 
     # we store the show_cursor state and escape key(s) for callback methods below
     @show_cursor = params[:show_cursor]
     @escape_key  = params[:escape_key]
     @resizable	 = params[:resizable]
+    @scale	 = params[:scale]
 
     # Gosu window setup
     super(params[:width], params[:height], {fullscreen: params[:fullscreen],resizable: params[:resizable]})
@@ -29,7 +31,7 @@ class Game < Window
     @main_state = Map.new(self)
   end
 
-  def needs_cursor?; true; end
+  def needs_cursor?; @show_cursor; end
 
   def button_down(id)
     super
@@ -47,7 +49,7 @@ class Game < Window
   end
 
   def draw
-    scale(1,1)do
+    scale(@scale,@scale)do
       @main_state.draw
     end
   end

@@ -3,16 +3,25 @@
 
 =end
 
-class GenerateMap
 
-	attr_accessor :map
+class Map
+  def initialize(window)
 
-	def initialize(size_x=10,size_y=10)
+    @x = @y = @z = 0
+
+    @tile_size = 16
+    @tileset = Image.load_tiles('gfx/tileset/sol.png', @tile_size, @tile_size, retro: true)
+
+    @map = generate_map(50,50)
+    
+  end
+  
+  def generate_map(size_x=50,size_y=50)
 		#Géneration de la map
-		@map = Hash.new
-		for x in 0..size_x
-			for y in 0..size_y
-				@map[[x,y]] = 1,0,nil,nil
+		map = Hash.new
+		size_x.times do |x|
+			size_y.times do |y|
+				map[[x,y]] = 1,0,nil,nil
 			end
 		end
 		
@@ -26,19 +35,20 @@ class GenerateMap
 		nbr_walker_max = 20	# nombre max de walker
 		nbr_walker = 1
 		walker = Hash.new		# génération du tableau de walker
-		for i in 0..nbr_walker_max-1
+		(nbr_walker_max-1).times do |i|
 			walker[i] = nil
 		end
+		puts walker.size
 		walker[0] = rand(1..size_x-1),rand(1..size_y-1),rand(0..3) # génération du premier walker
     
 
 		loop do
 			break if nbr_trou >= nbr_trou_max
 			walker.each do |id, data| 
-				if data != nil
+				if !data.nil?
 					x,y = data[0],data[1]
-					if @map[[x,y]][0] != 0
-						@map[[x,y]] = 0,1,nil,nil
+					if map[[x,y]][0] != 0
+						map[[x,y]] = 0,1,nil,nil
 						nbr_trou += 1
 					end
 					case walker[id][3]
@@ -53,7 +63,7 @@ class GenerateMap
 						end
 					walker[id][3] = rand(0..3) if rand(0..100) <= change_dir
 					if rand(0..100) <= new_walker and nbr_walker < nbr_walker_max
-						for i in 0..walker.size-1
+						(walker.size-1).times do |i|
 							if walker[i] == nil
 								walker[i] = walker[id][0],walker[id][1],rand(0..3)
 								nbr_walker += 1
@@ -70,29 +80,11 @@ class GenerateMap
 				end
 			end
 		end
-		return @map
+		return map
 	end
-   
-end
-
-
-
-
-class Map
-  def initialize(window)
-
-    @x,@y,@z = 0,0,0
-
-    @tile_size = 16
-    @tileset = Image.load_tiles('gfx/tileset/sol.png', @tile_size, @tile_size, retro: true)
-    size_x,size_y=25,25
-
-    $map = GenerateMap.new(50,50).map
-    
-  end
 
   def button_down(id)
-	$map = GenerateMap.new(50,50).map if id ==  KB_SPACE
+	@map = generate_map(50,50).map if id ==  KB_SPACE
 	puts "NEW MAP!!!"
   end
 
@@ -106,7 +98,7 @@ class Map
 
   def draw
 
-    $map.each do |coords, texture|
+    @map.each do |coords, texture|
 		x, y, = coords[0], coords[1]
 		tile1,tile2 = texture[1],texture[2]
 		if tile1 != nil
